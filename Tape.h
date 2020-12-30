@@ -154,5 +154,5 @@ public:
             i++;
         }
         cout << "^" << endl;
-    }
+    }// end of print_info()
 };

@@ -3,5 +3,3 @@ turing: main.cpp TM.h Transmission_function.h Tape.h
 .PHONY:
 clean:
 	rm turing
-run:
-	./turing

@@ -12,14 +12,17 @@ using namespace std;
 #define isInputSymbol(c) (c != ' ' && c != ',' && c != ';' && c != '{' && c != '}' && c != '*' && c != '_')
 #define isTapeSymbol(c) (c != ' ' && c != ',' && c != ';' && c != '{' && c != '}' && c != '*')
 #define isDirectionSymbol(c) (c == 'l' || c == 'r' || c == '*')
-
+//#define DEBUG
+#ifdef DEBUG
+#undef DEBUG
+#endif
 class TM{    
     // verbose flag:
     bool verbose;
-    // 7-tuple: 
-    set<string> Q, S, G;         // 状态集、输入符号集、纸带符号集
+    // the 7-tuple: 
+    set<string> Q, S, G;            // 状态集、输入符号集、纸带符号集
     string q0, B;                   // 初始状态、空格符号
-    set<string> F;                 // 终结状态集
+    set<string> F;                  // 终结状态集
     set<Transmission_function*> Transmission_functions;
     // number of tape(s):
 
@@ -65,8 +68,8 @@ public:
             if(s[0] == '#') {
                 switch(cnt){
                     case 0: {   // Q 状态集
-                        if(s.length() < 7 && s.substr(2, 4) != " = {") {
-                            fail(s + "Q1");
+                        if(s.length() < 7 && s.substr(0, 5) != "#Q = {") {
+                            fail(s + "[Q1]");
                         }
                         int i = 6;
                         while(1){
@@ -145,7 +148,7 @@ public:
                         break;
                     }
                     case 3: {   // q0 初始状态
-                        if(s.substr(0, 6) != "#q0 = "){
+                        if(s.substr(0, 7) != "#q0 = {"){
                             fail(s + "q0");
                         }
                         int i = 6;
@@ -161,7 +164,7 @@ public:
                         break;
                     }
                     case 4: {   // B 空白符
-                        if(s.substr(0, 5) != "#B = "){
+                        if(s.substr(0, 5) != "#B = {"){
                             fail(s + "B1");
                         }
                         int i = 5;
@@ -176,7 +179,7 @@ public:
                         break;
                     }
                     case 5: {   // F 终结状态集
-                        if(s.length() < 7 && s.substr(2, 4) != " = {") {
+                        if(s.length() < 7 && s.substr(0, 6) != "#F = {") {
                             fail(s + "F1");
                         }
                         int i = 6;
@@ -209,7 +212,7 @@ public:
                         break;
                     }
                     case 6: {   // N 纸带数
-                        if(s.substr(0, 5) != "#N = "){
+                        if(s.substr(0, 6) != "#N = {"){
                             fail(s + "N1");
                         }
                         int i = 5;
@@ -237,6 +240,7 @@ public:
                 string oldState, oldSymbol, newState, newSymbol;
                 string d;
                 vector<string> direction(this->N);
+                // old state
                 int i = 0;
                 int j = i;
                 while(j < s.length() && isStateSymbol(s[j]))
@@ -246,34 +250,34 @@ public:
                     fail("D1");
                 }
                 oldState = s.substr(i, j - i);
-
+                // old symbol
                 i = ++j;
                 while(j < s.length() && isTapeSymbol(s[j]))
                     j++;
                 if(j >= s.length())
                     fail("D2");
                 oldSymbol = s.substr(i, j - i);
-
-
+                // new symbol
                 i = ++j;
-                while(j < s.length() && isStateSymbol(s[j]))
+                while(j < s.length() && isTapeSymbol(s[j]))
                     j++;
                 if(j >= s.length())
                     fail("D3");
                 newSymbol = s.substr(i, j - i);
-
-
+                // direction
                 i = ++j;
                 while(j < s.length() && isDirectionSymbol(s[j]))
                     j++;
                 if(j >= s.length())
                     fail("D4");
                 d = s.substr(i, j - i);
-
-
+                // new state
                 i = ++j;
-                while(j < s.length() && isTapeSymbol(s[j]))
+                while(j < s.length() && isStateSymbol(s[j]))
                     j++;
+                if(j > s.length()){
+                    fail("D5");
+                }
                 newState = s.substr(i, j - i);
                 
                 for(int i = 0; i < this->N; i++){
@@ -332,16 +336,6 @@ public:
                 string tmp = this->tape[j]->get();
                 cur_tape_symbols.append(tmp);
             }
-            // find a delta
-            set<Transmission_function*>::iterator delta = this->Transmission_functions.end();
-            for(auto it = this->Transmission_functions.begin(); it != this->Transmission_functions.end(); it++){
-                bool matchingS = ((*it)->getOldState() == this->curState);
-                bool matchingQ = (cur_tape_symbols == (*it)->getOldSymbol());
-                if(matchingQ && matchingS){
-                    delta = it;
-                    break;
-                }
-            }
             // print info
             if(this->verbose){
                 cout << left << setw(8) << "Step" << ": " << step++ << endl;
@@ -352,6 +346,16 @@ public:
                 cout << "---------------------------------------------" << endl;
             }
             
+            // find a delta
+            set<Transmission_function*>::iterator delta = this->Transmission_functions.end();
+            for(auto it = this->Transmission_functions.begin(); it != this->Transmission_functions.end(); it++){
+                bool matchingS = ((*it)->getOldState() == this->curState);
+                bool matchingQ = (cur_tape_symbols == (*it)->getOldSymbol());
+                if(matchingQ && matchingS){
+                    delta = it;
+                    break;
+                }
+            }
             if(delta == this->Transmission_functions.end()){
                 // halted:
                 if(this->verbose)
