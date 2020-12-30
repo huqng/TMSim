@@ -12,10 +12,10 @@ using namespace std;
 #define isInputSymbol(c) (c != ' ' && c != ',' && c != ';' && c != '{' && c != '}' && c != '*' && c != '_')
 #define isTapeSymbol(c) (c != ' ' && c != ',' && c != ';' && c != '{' && c != '}' && c != '*')
 #define isDirectionSymbol(c) (c == 'l' || c == 'r' || c == '*')
-//#define DEBUG
-#ifdef DEBUG
-#undef DEBUG
-#endif
+#define DEBUG
+//#ifdef DEBUG
+//#undef DEBUG
+//#endif
 class TM{    
     // verbose flag:
     bool verbose;
@@ -148,7 +148,7 @@ public:
                         break;
                     }
                     case 3: {   // q0 初始状态
-                        if(s.substr(0, 7) != "#q0 = {"){
+                        if(s.substr(0, 6) != "#q0 = "){
                             fail(s + "q0");
                         }
                         int i = 6;
@@ -164,7 +164,7 @@ public:
                         break;
                     }
                     case 4: {   // B 空白符
-                        if(s.substr(0, 5) != "#B = {"){
+                        if(s.substr(0, 5) != "#B = "){
                             fail(s + "B1");
                         }
                         int i = 5;
@@ -212,7 +212,7 @@ public:
                         break;
                     }
                     case 6: {   // N 纸带数
-                        if(s.substr(0, 6) != "#N = {"){
+                        if(s.substr(0, 5) != "#N = "){
                             fail(s + "N1");
                         }
                         int i = 5;
